@@ -2,6 +2,7 @@ package com.example.thebreedexplorerapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,11 +22,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.thebreedexplorerapp.R
-import com.example.thebreedexplorerapp.ui.components.Button
+import com.example.thebreedexplorerapp.ui.components.IconButton
 import com.example.thebreedexplorerapp.ui.components.SearchBar
 import com.example.thebreedexplorerapp.ui.components.TopBar
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
+import com.example.thebreedexplorerapp.ui.theme.Purple40
 import com.example.thebreedexplorerapp.ui.theme.Purple80
+import com.example.thebreedexplorerapp.ui.theme.Red40
+import com.example.thebreedexplorerapp.ui.theme.Red80
 import com.example.thebreedexplorerapp.ui.theme.Typography
 import com.example.thebreedexplorerapp.ui.theme.padding100
 import com.example.thebreedexplorerapp.ui.theme.padding200
@@ -101,7 +105,7 @@ private fun DogBreedItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(size = cardBorderRadius))
-            .background(Purple80)
+            .background(color = if (isSystemInDarkTheme()) Purple40 else Purple80)
             .clickable(onClick = { onClick(dogBreedId) }),
     ) {
         Text(
@@ -115,10 +119,11 @@ private fun DogBreedItem(
                 )
         )
 
-        Button(
+        IconButton(
             iconResId = R.drawable.ic_favorite.takeIf { isFavorite } ?: R.drawable.ic_favorite_filled,
             onClick = { onAddToFavoritesClick(dogBreedId) },
             iconButtonSize = leadingIconSize,
+            tint = if (isSystemInDarkTheme()) Red80 else Red40,
             modifier = Modifier.padding(end = padding200)
         )
     }

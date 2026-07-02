@@ -1,6 +1,7 @@
 package com.example.thebreedexplorerapp.ui.screens
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,10 +26,12 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.thebreedexplorerapp.R
-import com.example.thebreedexplorerapp.ui.components.Button
+import com.example.thebreedexplorerapp.ui.components.IconButton
 import com.example.thebreedexplorerapp.ui.components.TopBar
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreedGallery
+import com.example.thebreedexplorerapp.ui.theme.Red40
+import com.example.thebreedexplorerapp.ui.theme.Red80
 import com.example.thebreedexplorerapp.ui.theme.Typography
 
 private val galleryGridCellsMinWidth = 200.dp
@@ -45,17 +48,18 @@ fun DogBreedDetailsScreen(
             TopBar(
                 title = stringResource(R.string.dog_breed_gallery_title_template, dogBreedGallery.breed.name),
                 leadingContent = {
-                    Button(
+                    IconButton(
                         iconResId = R.drawable.ic_back,
                         onClick = callbacks.onBackClick,
                         iconButtonSize = topBarIconSize,
                     )
                 },
                 trailingContent = {
-                    Button(
+                    IconButton(
                         iconResId = R.drawable.ic_favorite_filled.takeIf { dogBreedGallery.breed.isFavorite } ?: R.drawable.ic_favorite,
                         onClick = { callbacks.onAddToFavoritesClick(dogBreedGallery.breed.id) },
                         iconButtonSize = topBarIconSize,
+                        tint = if (isSystemInDarkTheme()) Red80 else Red40,
                     )
                 },
             )

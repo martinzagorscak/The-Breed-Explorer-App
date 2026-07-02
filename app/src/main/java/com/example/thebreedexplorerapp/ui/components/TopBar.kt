@@ -56,14 +56,14 @@ private fun TopBarPreview() {
     Column(verticalArrangement = Arrangement.spacedBy(padding200)) {
         val iconButtonSize = 32.dp
         val leadingContent: @Composable () -> Unit = {
-            Button(
+            IconButton(
                 iconResId = R.drawable.ic_back,
                 onClick = {},
                 iconButtonSize = iconButtonSize,
             )
         }
         val trailingContent: @Composable () -> Unit = {
-            Button(
+            IconButton(
                 iconResId = R.drawable.ic_favorite,
                 onClick = {},
                 iconButtonSize = iconButtonSize,

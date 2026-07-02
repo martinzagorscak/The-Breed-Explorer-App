@@ -29,7 +29,7 @@ fun SearchBar(
         placeholder = { Text(text = "Search...") },
         trailingIcon = {
             if (query.isNotEmpty()) {
-                Button(
+                IconButton(
                     iconResId = R.drawable.ic_clear,
                     onClick = onClearClick,
                     iconButtonSize = trailingIconSize,
