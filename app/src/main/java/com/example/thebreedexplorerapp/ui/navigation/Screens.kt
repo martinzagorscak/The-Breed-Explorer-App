@@ -1,7 +1,10 @@
 package com.example.thebreedexplorerapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,7 +37,11 @@ fun SetupNavGraph(
     ) {
         composable<Screen.DogBreedsScreen> {
             // todo impl with real data
+            val emptyQuery = ""
+            var dogBreedQuery by remember { mutableStateOf(emptyQuery) }
+
             DogBreedsScreen(
+                dogBreedQuery = dogBreedQuery,
                 dogBreeds = listOf(
                     PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
                     PresentableDogBreed(id = 2, name = "Golden Retriever", isFavorite = true),
@@ -42,6 +49,8 @@ fun SetupNavGraph(
                 ),
                 callbacks = remember {
                     DogBreedsScreenCallbacks(
+                        onQueryChange = { dogBreedQuery = it },
+                        onQueryClear = { dogBreedQuery = emptyQuery },
                         onDogBreedClick = { dogBreedId ->
                             navController.navigate(route = Screen.DogBreedDetailsScreen(dogBreedId))
                         },
@@ -52,7 +61,7 @@ fun SetupNavGraph(
         }
         composable<Screen.DogBreedDetailsScreen> { backStackEntry ->
             // todo impl with real data
-            val screen : Screen.DogBreedDetailsScreen = backStackEntry.toRoute()
+            val screen: Screen.DogBreedDetailsScreen = backStackEntry.toRoute()
             val dogBreedId = screen.breedId
 
             val mockedList = listOf(
