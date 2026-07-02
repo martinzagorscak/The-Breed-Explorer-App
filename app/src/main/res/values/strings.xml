@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">The Breed Explorer App</string>
+    <string name="dog_breeds_title">Dog Breeds</string>
+    <string name="dog_breed_gallery_title_template">%s gallery</string>
 </resources>
