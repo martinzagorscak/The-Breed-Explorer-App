@@ -1,5 +1,7 @@
 package com.example.thebreedexplorerapp.ui.screens
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,12 +10,15 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -22,32 +27,34 @@ import coil3.request.crossfade
 import com.example.thebreedexplorerapp.R
 import com.example.thebreedexplorerapp.ui.components.Button
 import com.example.thebreedexplorerapp.ui.components.TopBar
+import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
+import com.example.thebreedexplorerapp.ui.model.PresentableDogBreedGallery
+import com.example.thebreedexplorerapp.ui.theme.Typography
 
 private val galleryGridCellsMinWidth = 200.dp
 private val topBarIconSize = 36.dp
 
 @Composable
 fun DogBreedDetailsScreen(
-    dogBreedName: String,
-    onBackClick: () -> Unit,
-    onAddToFavoritesClick: () -> Unit,
+    dogBreedGallery: PresentableDogBreedGallery,
+    callbacks: DogBreedsDetailsScreenCallbacks,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
             TopBar(
-                title = stringResource(R.string.dog_breed_gallery_title_template, dogBreedName),
+                title = stringResource(R.string.dog_breed_gallery_title_template, dogBreedGallery.breed.name),
                 leadingContent = {
                     Button(
                         iconResId = R.drawable.ic_back,
-                        onClick = onBackClick,
+                        onClick = callbacks.onBackClick,
                         iconButtonSize = topBarIconSize,
                     )
                 },
                 trailingContent = {
                     Button(
-                        iconResId = R.drawable.ic_favorite,
-                        onClick = onAddToFavoritesClick,
+                        iconResId = R.drawable.ic_favorite_filled.takeIf { dogBreedGallery.breed.isFavorite } ?: R.drawable.ic_favorite,
+                        onClick = { callbacks.onAddToFavoritesClick(dogBreedGallery.breed.id) },
                         iconButtonSize = topBarIconSize,
                     )
                 },
@@ -55,30 +62,18 @@ fun DogBreedDetailsScreen(
         },
         modifier = modifier.fillMaxSize(),
     ) { paddingValues ->
-        val mockedList = listOf(
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10"
-        )
-        Gallery(
-            imageUrls = mockedList, // TODO replace with real data
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
-        )
+        Crossfade(targetState = dogBreedGallery.imageUrls) { imageUrls ->
+            if (imageUrls.isNotEmpty()) {
+                Gallery(
+                    imageUrls = dogBreedGallery.imageUrls,
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize(),
+                )
+            } else {
+                EmptyGallery(dogBreedName = dogBreedGallery.breed.name)
+            }
+        }
     }
 }
 
@@ -109,12 +104,37 @@ private fun Gallery(
     }
 }
 
+@Composable
+private fun EmptyGallery(
+    dogBreedName: String,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Text(
+            text = stringResource(R.string.dog_breed_empty_gallery_message, dogBreedName),
+            style = Typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(Alignment.Center),
+        )
+    }
+}
+
 @Preview
 @Composable
 private fun DogBreedDetailsScreenPreview() {
     DogBreedDetailsScreen(
-        dogBreedName = "Sausage Dog",
-        onBackClick = {},
-        onAddToFavoritesClick = {},
+        dogBreedGallery = PresentableDogBreedGallery(
+            breed = PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
+            imageUrls = emptyList(),
+        ),
+        callbacks = DogBreedsDetailsScreenCallbacks(
+            onBackClick = {},
+            onAddToFavoritesClick = {},
+        )
     )
 }
+
+data class DogBreedsDetailsScreenCallbacks(
+    val onBackClick: () -> Unit,
+    val onAddToFavoritesClick: (Int) -> Unit,
+)

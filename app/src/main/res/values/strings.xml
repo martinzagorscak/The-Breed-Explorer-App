@@ -2,4 +2,4 @@
     <string name="app_name">The Breed Explorer App</string>
     <string name="dog_breeds_title">Dog Breeds</string>
     <string name="dog_breed_gallery_title_template">%s gallery</string>
-</resources>
+    <string name="dog_breed_empty_gallery_message">"We don't own any images of %s breed.\nIf you own one, share with us on: dog.images@dogs.com"</string></resources>

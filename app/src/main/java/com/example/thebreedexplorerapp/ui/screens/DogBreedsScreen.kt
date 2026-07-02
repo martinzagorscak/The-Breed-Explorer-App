@@ -13,13 +13,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.thebreedexplorerapp.R
+import com.example.thebreedexplorerapp.ui.components.Button
 import com.example.thebreedexplorerapp.ui.components.TopBar
+import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
 import com.example.thebreedexplorerapp.ui.theme.Purple80
 import com.example.thebreedexplorerapp.ui.theme.Typography
 import com.example.thebreedexplorerapp.ui.theme.padding100
@@ -27,10 +30,12 @@ import com.example.thebreedexplorerapp.ui.theme.padding200
 import com.example.thebreedexplorerapp.ui.theme.padding300
 
 private val cardBorderRadius = 16.dp
+private val leadingIconSize = 42.dp
 
 @Composable
 fun DogBreedsScreen(
-    // todo add state [DogBreed]
+    dogBreeds: List<PresentableDogBreed>,
+    callbacks: DogBreedsScreenCallbacks,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -40,10 +45,9 @@ fun DogBreedsScreen(
         modifier = modifier.fillMaxSize(),
     ) { paddingValues ->
         DogBreedList(
-            dogBreedNames = List(50) { "Dog Breed $it" }, // TODO replace with real data
-            onItemClick = {
-                // todo impl
-            },
+            dogBreeds = dogBreeds,
+            onItemClick = callbacks.onDogBreedClick,
+            onAddDogBreedToFavoriteClick = callbacks.onAddDogBreedToFavoriteClick,
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -51,18 +55,22 @@ fun DogBreedsScreen(
 
 @Composable
 private fun DogBreedList(
-    dogBreedNames: List<String>,
-    onItemClick: () -> Unit,
+    dogBreeds: List<PresentableDogBreed>,
+    onItemClick: (Int) -> Unit,
+    onAddDogBreedToFavoriteClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(padding100),
         modifier = modifier.padding(horizontal = padding200),
     ) {
-        items(items = dogBreedNames, key = { it }) { dogBreedName ->
+        items(items = dogBreeds, key = PresentableDogBreed::id) { dogBreed ->
             DogBreedItem(
-                dogBreedName = dogBreedName,
+                dogBreedId = dogBreed.id,
+                dogBreedName = dogBreed.name,
+                isFavorite = dogBreed.isFavorite,
                 onClick = onItemClick,
+                onAddToFavoritesClick = onAddDogBreedToFavoriteClick,
             )
         }
     }
@@ -70,24 +78,37 @@ private fun DogBreedList(
 
 @Composable
 private fun DogBreedItem(
+    dogBreedId: Int,
     dogBreedName: String,
-    onClick: () -> Unit,
+    isFavorite: Boolean,
+    onClick: (Int) -> Unit,
+    onAddToFavoritesClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(size = cardBorderRadius))
             .background(Purple80)
-            .clickable(onClick = onClick),
+            .clickable(onClick = { onClick(dogBreedId) }),
     ) {
         Text(
             text = dogBreedName,
             style = Typography.bodyLarge,
-            modifier = Modifier.padding(
-                horizontal = padding200,
-                vertical = padding300,
-            )
+            modifier = Modifier
+                .weight(1f)
+                .padding(
+                    horizontal = padding200,
+                    vertical = padding300,
+                )
+        )
+
+        Button(
+            iconResId = R.drawable.ic_favorite.takeIf { isFavorite } ?: R.drawable.ic_favorite_filled,
+            onClick = { onAddToFavoritesClick(dogBreedId) },
+            iconButtonSize = leadingIconSize,
+            modifier = Modifier.padding(end = padding200)
         )
     }
 }
@@ -95,5 +116,20 @@ private fun DogBreedItem(
 @Preview
 @Composable
 private fun DogBreedsScreenPreview() {
-    DogBreedsScreen()
+    DogBreedsScreen(
+        dogBreeds = listOf(
+            PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
+            PresentableDogBreed(id = 2, name = "Golden Retriever", isFavorite = true),
+            PresentableDogBreed(id = 3, name = "German Shepherd", isFavorite = false),
+        ),
+        callbacks = DogBreedsScreenCallbacks(
+            onDogBreedClick = {},
+            onAddDogBreedToFavoriteClick = {},
+        )
+    )
 }
+
+data class DogBreedsScreenCallbacks(
+    val onDogBreedClick: (Int) -> Unit,
+    val onAddDogBreedToFavoriteClick: (Int) -> Unit,
+)
