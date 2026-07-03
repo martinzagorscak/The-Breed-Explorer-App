@@ -36,7 +36,7 @@ fun SetupNavGraph(
         startDestination = Screen.DogBreedsScreen,
     ) {
         composable<Screen.DogBreedsScreen> {
-            // todo impl with real data
+            // todo impl with real data - include viewmodel
             val emptyQuery = ""
             var dogBreedQuery by remember { mutableStateOf(emptyQuery) }
 
@@ -60,7 +60,7 @@ fun SetupNavGraph(
             )
         }
         composable<Screen.DogBreedDetailsScreen> { backStackEntry ->
-            // todo impl with real data
+            // todo impl with real data - include viewmodel
             val screen: Screen.DogBreedDetailsScreen = backStackEntry.toRoute()
             val dogBreedId = screen.breedId
 

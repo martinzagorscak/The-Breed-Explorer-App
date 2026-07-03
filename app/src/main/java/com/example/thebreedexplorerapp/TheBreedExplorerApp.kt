@@ -3,6 +3,7 @@ package com.example.thebreedexplorerapp
 import android.app.Application
 import com.example.thebreedexplorerapp.data.di.dataModule
 import com.example.thebreedexplorerapp.domain.di.domainModule
+import com.example.thebreedexplorerapp.ui.viewmodel.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -15,7 +16,7 @@ class TheBreedExplorerApp : Application() {
         startKoin {
             androidLogger()
             androidContext(this@TheBreedExplorerApp)
-            modules(dataModule, domainModule)
+            modules(dataModule, domainModule, viewModelModule)
         }
     }
 }
