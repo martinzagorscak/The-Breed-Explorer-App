@@ -11,10 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 private const val EMPTY = ""
+private const val SEARCH_QUERY_DEBOUNCE = 300L
 
 abstract class DogBreedsViewModel : ViewModel() {
     abstract fun searchQueryViewState(): Flow<String>
@@ -37,10 +39,11 @@ internal class DogBreedsViewModelImpl(
     override fun allDogBreedsViewState(): Flow<List<PresentableDogBreed>> = combine(
         getAllDogBreedsUseCase(),
         getFavoriteDogBreedIdsUseCase(),
-        searchQuery,
+        searchQuery.debounce(SEARCH_QUERY_DEBOUNCE),
     ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
-        // TODO filter by searchQuery
-        allDogBreeds.map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
+        allDogBreeds
+            .filter { it.name.startsWith(prefix = searchQuery, ignoreCase = true) }
+            .map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
     }
 
     override fun onSearchQueryChanged(query: String) = searchQuery.update { query }
