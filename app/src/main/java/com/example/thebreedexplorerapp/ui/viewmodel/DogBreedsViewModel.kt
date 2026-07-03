@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.thebreedexplorerapp.domain.usecase.GetAllDogBreedsUseCase
 import com.example.thebreedexplorerapp.domain.usecase.ToggleDogBreedAsFavoriteUseCase
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
+import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,12 +36,8 @@ internal class DogBreedsViewModelImpl(
         getAllDogBreedsUseCase(),
         searchQuery,
     ) { allDogBreeds, searchQuery ->
-        // TODO impl filtering and real data
-        listOf(
-            PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
-            PresentableDogBreed(id = 2, name = "Golden Retriever", isFavorite = true),
-            PresentableDogBreed(id = 3, name = "German Shepherd", isFavorite = false),
-        )
+        // TODO filter by searchQuery
+        allDogBreeds.map { it.toPresentableDogBreed() }
     }
 
     override fun onSearchQueryChanged(query: String) = searchQuery.update { query }

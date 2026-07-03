@@ -14,23 +14,24 @@ fun ApiDogBreedsResponse.toDogBreeds(): List<DogBreed> {
         if (subBreeds.isEmpty()) {
             val dogBreed = DogBreed(
                 id = id,
-                name = mainBreed,
+                name = mainBreed.capitalize(),
                 keyword = mainBreed.lowercase(),
                 isFavorite = false,
             )
             breedList.add(dogBreed)
+            id++
         } else {
             for (subBreed in subBreeds) {
                 val dogSubBreed = DogBreed(
                     id = id,
                     name = "${mainBreed.capitalize()} ${subBreed.capitalize()}",
-                    keyword = "$mainBreed-$subBreed",
+                    keyword = "${mainBreed.lowercase()}-${subBreed.lowercase()}",
                     isFavorite = false,
                 )
                 breedList.add(dogSubBreed)
+                id++
             }
         }
-        id++
     }
 
     return breedList
