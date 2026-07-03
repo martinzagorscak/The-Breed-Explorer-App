@@ -17,6 +17,7 @@ val viewModelModule = module {
             dogBreedId = dogBreedId,
             getDogBreedDataUseCase = get(),
             getDogBreedImagesUseCase = get(),
+            getFavoriteDogBreedIdsUseCase = get(),
             toggleDogBreedAsFavoriteUseCase = get(),
         )
     }

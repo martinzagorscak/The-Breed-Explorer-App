@@ -4,13 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thebreedexplorerapp.domain.usecase.GetDogBreedDataUseCase
 import com.example.thebreedexplorerapp.domain.usecase.GetDogBreedImagesUseCase
+import com.example.thebreedexplorerapp.domain.usecase.GetFavoriteDogBreedIdsUseCase
 import com.example.thebreedexplorerapp.domain.usecase.ToggleDogBreedAsFavoriteUseCase
-import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreedGallery
+import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 abstract class DogBreedGalleryViewModel : ViewModel() {
@@ -23,38 +24,24 @@ internal class DogBreedGalleryViewModelImpl(
     private val dogBreedId: Int,
     private val getDogBreedDataUseCase: GetDogBreedDataUseCase,
     private val getDogBreedImagesUseCase: GetDogBreedImagesUseCase,
+    private val getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
 ) : DogBreedGalleryViewModel() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun dogBreedGalleryViewState(): Flow<PresentableDogBreedGallery> =
-        getDogBreedDataUseCase(breedId = dogBreedId).mapLatest {
+        combine(
+            getDogBreedDataUseCase(breedId = dogBreedId),
+            getFavoriteDogBreedIdsUseCase()
+        ) { dogBreed, favoriteDogBreedIds ->
             val images = getDogBreedImagesUseCase(breedId = dogBreedId)
-            // todo impl with real data
 
-            val mockedList = listOf(
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
-                "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10"
-            )
-
-            PresentableDogBreedGallery(
-                breed = PresentableDogBreed(id = dogBreedId, name = "Sausage Dog", isFavorite = false),
-                imageUrls = mockedList,
-            )
+            dogBreed?.let {
+                PresentableDogBreedGallery(
+                    breed = dogBreed.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(dogBreedId)), // TODO replace with real value
+                    imageUrls = images,
+                )
+            } ?: PresentableDogBreedGallery.INITIAL
         }
 
     override fun toggleDogBreedAsFavorite() {

@@ -3,8 +3,6 @@ package com.example.thebreedexplorerapp.data.api
 import com.example.thebreedexplorerapp.data.model.ApiDogBreedGalleryResponse
 import com.example.thebreedexplorerapp.data.model.ApiDogBreedsResponse
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
 import kotlinx.serialization.json.Json
 
 interface DogApi {
@@ -28,7 +26,31 @@ internal class DogApiImpl(private val client: HttpClient) : DogApi {
         return result
     }
 
-    override suspend fun getBreedImages(breedKeyword: String): ApiDogBreedGalleryResponse =
-        client.get("https://dog.ceo/api/breed/$breedKeyword/images/random/20").body<ApiDogBreedGalleryResponse>()
+    override suspend fun getBreedImages(breedKeyword: String): ApiDogBreedGalleryResponse {
+        // TODO remove when -> NO server error 520
+        // client.get("https://dog.ceo/api/breed/$breedKeyword/images/random/20").body<ApiDogBreedGalleryResponse>()
 
+        val mockedList = listOf(
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10",
+            "https://cricksydog.hr/wp-content/uploads/2022/02/dachshund_PNG15.png",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTP9lgK0is2vPr-PLfLMlxsQPxjd_ela1ZF9joRPBZ0ChR43HdwaToMn1A&s=10"
+        )
+        return ApiDogBreedGalleryResponse(
+            imageUrls = mockedList,
+            status = "success",
+        )
+    }
 }
