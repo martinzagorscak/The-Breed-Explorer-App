@@ -52,6 +52,12 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.logging)
+    implementation(libs.ktor.serialization)
+    implementation(libs.ktor.content.negotiation)
+    implementation(libs.ktor.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
