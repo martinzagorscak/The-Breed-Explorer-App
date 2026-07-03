@@ -120,7 +120,7 @@ private fun DogBreedItem(
         )
 
         IconButton(
-            iconResId = R.drawable.ic_favorite.takeIf { isFavorite } ?: R.drawable.ic_favorite_filled,
+            iconResId = R.drawable.ic_favorite_filled.takeIf { isFavorite } ?: R.drawable.ic_favorite,
             onClick = { onAddToFavoritesClick(dogBreedId) },
             iconButtonSize = leadingIconSize,
             tint = if (isSystemInDarkTheme()) Red80 else Red40,
