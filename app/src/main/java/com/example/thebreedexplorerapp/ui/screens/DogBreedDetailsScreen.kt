@@ -57,7 +57,7 @@ fun DogBreedDetailsScreen(
                 trailingContent = {
                     IconButton(
                         iconResId = R.drawable.ic_favorite_filled.takeIf { dogBreedGallery.breed.isFavorite } ?: R.drawable.ic_favorite,
-                        onClick = { callbacks.onAddToFavoritesClick(dogBreedGallery.breed.id) },
+                        onClick = { callbacks.onToggleDogBreedAsFavorite() },
                         iconButtonSize = topBarIconSize,
                         tint = if (isSystemInDarkTheme()) Red80 else Red40,
                     )
@@ -133,12 +133,12 @@ private fun DogBreedDetailsScreenPreview() {
         ),
         callbacks = DogBreedsDetailsScreenCallbacks(
             onBackClick = {},
-            onAddToFavoritesClick = {},
+            onToggleDogBreedAsFavorite = {},
         )
     )
 }
 
 data class DogBreedsDetailsScreenCallbacks(
     val onBackClick: () -> Unit,
-    val onAddToFavoritesClick: (Int) -> Unit,
+    val onToggleDogBreedAsFavorite: () -> Unit,
 )
