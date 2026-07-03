@@ -3,6 +3,7 @@ package com.example.thebreedexplorerapp.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thebreedexplorerapp.domain.usecase.GetAllDogBreedsUseCase
+import com.example.thebreedexplorerapp.domain.usecase.GetFavoriteDogBreedIdsUseCase
 import com.example.thebreedexplorerapp.domain.usecase.ToggleDogBreedAsFavoriteUseCase
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
 import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
@@ -25,6 +26,7 @@ abstract class DogBreedsViewModel : ViewModel() {
 
 internal class DogBreedsViewModelImpl(
     private val getAllDogBreedsUseCase: GetAllDogBreedsUseCase,
+    private val getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
 ) : DogBreedsViewModel() {
 
@@ -34,10 +36,11 @@ internal class DogBreedsViewModelImpl(
 
     override fun allDogBreedsViewState(): Flow<List<PresentableDogBreed>> = combine(
         getAllDogBreedsUseCase(),
+        getFavoriteDogBreedIdsUseCase(),
         searchQuery,
-    ) { allDogBreeds, searchQuery ->
+    ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
         // TODO filter by searchQuery
-        allDogBreeds.map { it.toPresentableDogBreed() }
+        allDogBreeds.map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
     }
 
     override fun onSearchQueryChanged(query: String) = searchQuery.update { query }

@@ -7,6 +7,7 @@ val viewModelModule = module {
     viewModel<DogBreedsViewModel> {
         DogBreedsViewModelImpl(
             getAllDogBreedsUseCase = get(),
+            getFavoriteDogBreedIdsUseCase = get(),
             toggleDogBreedAsFavoriteUseCase = get(),
         )
     }

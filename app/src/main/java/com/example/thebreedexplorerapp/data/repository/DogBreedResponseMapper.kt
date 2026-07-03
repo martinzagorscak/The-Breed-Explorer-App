@@ -16,7 +16,6 @@ fun ApiDogBreedsResponse.toDogBreeds(): List<DogBreed> {
                 id = id,
                 name = mainBreed.capitalize(),
                 keyword = mainBreed.lowercase(),
-                isFavorite = false,
             )
             breedList.add(dogBreed)
             id++
@@ -26,7 +25,6 @@ fun ApiDogBreedsResponse.toDogBreeds(): List<DogBreed> {
                     id = id,
                     name = "${mainBreed.capitalize()} ${subBreed.capitalize()}",
                     keyword = "${mainBreed.lowercase()}-${subBreed.lowercase()}",
-                    isFavorite = false,
                 )
                 breedList.add(dogSubBreed)
                 id++

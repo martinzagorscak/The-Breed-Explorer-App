@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 interface DogRepository {
     fun allDogBreeds(): Flow<List<DogBreed>>
     fun dogBreed(breedId: Int): Flow<DogBreed?>
+    fun favoriteDogBreeds(): Flow<List<Int>>
     suspend fun dogBreedImages(breedId: Int): List<String>
     suspend fun toggleDogBreedAsFavorite(breedId: Int)
 }
@@ -38,6 +39,8 @@ internal class DogRepositoryImpl(
         dogBreeds.firstOrNull { it.id == breedId }
     }
 
+    override fun favoriteDogBreeds(): Flow<List<Int>> = favoriteDogBreedsPublisher
+
     override suspend fun dogBreedImages(breedId: Int): List<String> {
         val breedKeyword = allDogBreedsPublisher.value.firstOrNull { it.id == breedId }?.keyword
         return breedKeyword?.let { dogApi.getBreedImages(breedKeyword = it) }?.imageUrls ?: emptyList()
@@ -46,7 +49,7 @@ internal class DogRepositoryImpl(
     override suspend fun toggleDogBreedAsFavorite(breedId: Int) {
         with(favoriteDogBreedsPublisher) {
             if (value.contains(breedId)) {
-                value.filter { it != breedId }
+                update { value.filter { it != breedId } }
             } else {
                 update { value + breedId }
             }
