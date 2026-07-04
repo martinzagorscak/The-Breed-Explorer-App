@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +23,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.thebreedexplorerapp.R
+import com.example.thebreedexplorerapp.ui.components.CTA
+import com.example.thebreedexplorerapp.ui.components.FallbackState
 import com.example.thebreedexplorerapp.ui.components.IconButton
+import com.example.thebreedexplorerapp.ui.components.LoadingIndicator
 import com.example.thebreedexplorerapp.ui.components.SearchBar
 import com.example.thebreedexplorerapp.ui.components.TopBar
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
@@ -34,6 +38,7 @@ import com.example.thebreedexplorerapp.ui.theme.Typography
 import com.example.thebreedexplorerapp.ui.theme.padding100
 import com.example.thebreedexplorerapp.ui.theme.padding200
 import com.example.thebreedexplorerapp.ui.theme.padding300
+import com.example.thebreedexplorerapp.ui.viewmodel.DogBreedsViewState
 
 private val cardBorderRadius = 16.dp
 private val leadingIconSize = 42.dp
@@ -41,7 +46,7 @@ private val leadingIconSize = 42.dp
 @Composable
 fun DogBreedsScreen(
     dogBreedQuery: String,
-    dogBreeds: List<PresentableDogBreed>,
+    dogBreedsViewState: DogBreedsViewState,
     callbacks: DogBreedsScreenCallbacks,
     modifier: Modifier = Modifier
 ) {
@@ -58,12 +63,41 @@ fun DogBreedsScreen(
                 onClearClick = callbacks.onQueryClear,
                 modifier = Modifier.padding(padding200),
             )
-            DogBreedList(
-                dogBreeds = dogBreeds,
-                onItemClick = callbacks.onDogBreedClick,
-                onAddDogBreedToFavoriteClick = callbacks.onAddDogBreedToFavoriteClick,
-                modifier = Modifier.weight(1f)
-            )
+            when (dogBreedsViewState) {
+                is DogBreedsViewState.Loaded -> {
+                    DogBreedList(
+                        dogBreeds = dogBreedsViewState.dogBreeds,
+                        onItemClick = callbacks.onDogBreedClick,
+                        onAddDogBreedToFavoriteClick = callbacks.onAddDogBreedToFavoriteClick,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                DogBreedsViewState.Empty -> {
+                    AlignInTheMiddle {
+                        FallbackState(title = stringResource(R.string.dog_breeds_empty_message))
+                    }
+                }
+
+                DogBreedsViewState.Error -> {
+                    AlignInTheMiddle {
+                        FallbackState(
+                            title = stringResource(R.string.general_error_message),
+                            cta = CTA(
+                                label = stringResource(R.string.try_again),
+                                onClick = callbacks.onTryAgainClick,
+                            ),
+                        )
+                    }
+                }
+
+                DogBreedsViewState.Loading -> {
+
+                    AlignInTheMiddle {
+                        LoadingIndicator()
+                    }
+                }
+            }
         }
     }
 }
@@ -129,21 +163,37 @@ private fun DogBreedItem(
     }
 }
 
+@Composable
+private fun AlignInTheMiddle(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.fillMaxSize()
+    ) {
+        content()
+    }
+}
+
 @Preview
 @Composable
 private fun DogBreedsScreenPreview() {
     DogBreedsScreen(
         dogBreedQuery = "",
-        dogBreeds = listOf(
-            PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
-            PresentableDogBreed(id = 2, name = "Golden Retriever", isFavorite = true),
-            PresentableDogBreed(id = 3, name = "German Shepherd", isFavorite = false),
+        dogBreedsViewState = DogBreedsViewState.Loaded(
+            dogBreeds = listOf(
+                PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
+                PresentableDogBreed(id = 2, name = "Golden Retriever", isFavorite = true),
+                PresentableDogBreed(id = 3, name = "German Shepherd", isFavorite = false),
+            )
         ),
         callbacks = DogBreedsScreenCallbacks(
             onDogBreedClick = {},
             onAddDogBreedToFavoriteClick = {},
             onQueryChange = {},
-            onQueryClear = {}
+            onQueryClear = {},
+            onTryAgainClick = {},
         )
     )
 }
@@ -153,4 +203,5 @@ data class DogBreedsScreenCallbacks(
     val onAddDogBreedToFavoriteClick: (Int) -> Unit,
     val onQueryChange: (String) -> Unit,
     val onQueryClear: () -> Unit,
+    val onTryAgainClick: () -> Unit,
 )

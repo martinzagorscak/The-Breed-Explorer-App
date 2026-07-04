@@ -7,13 +7,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.example.thebreedexplorerapp.ui.model.PresentableDogBreedGallery
 import com.example.thebreedexplorerapp.ui.screens.DogBreedDetailsScreen
 import com.example.thebreedexplorerapp.ui.screens.DogBreedsDetailsScreenCallbacks
 import com.example.thebreedexplorerapp.ui.screens.DogBreedsScreen
 import com.example.thebreedexplorerapp.ui.screens.DogBreedsScreenCallbacks
 import com.example.thebreedexplorerapp.ui.viewmodel.DogBreedGalleryViewModel
+import com.example.thebreedexplorerapp.ui.viewmodel.DogBreedGalleryViewState
 import com.example.thebreedexplorerapp.ui.viewmodel.DogBreedsViewModel
+import com.example.thebreedexplorerapp.ui.viewmodel.DogBreedsViewState
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -39,11 +40,11 @@ fun SetupNavGraph(
         composable<Screen.DogBreedsScreen> {
             val viewModel = koinViewModel<DogBreedsViewModel>()
             val searchQuery = viewModel.searchQueryViewState().collectAsState(initial = "").value
-            val dogBreeds = viewModel.allDogBreedsViewState().collectAsState(initial = emptyList()).value
+            val dogBreedsViewState = viewModel.dogBreedsViewState().collectAsState(initial = DogBreedsViewState.Loading).value
 
             DogBreedsScreen(
                 dogBreedQuery = searchQuery,
-                dogBreeds = dogBreeds,
+                dogBreedsViewState = dogBreedsViewState,
                 callbacks = remember {
                     DogBreedsScreenCallbacks(
                         onQueryChange = viewModel::onSearchQueryChanged,
@@ -52,6 +53,7 @@ fun SetupNavGraph(
                             navController.navigate(route = Screen.DogBreedDetailsScreen(dogBreedId))
                         },
                         onAddDogBreedToFavoriteClick = viewModel::toggleDogBreedAsFavorite,
+                        onTryAgainClick = {}, // todo continue here
                     )
                 }
             )
@@ -60,10 +62,10 @@ fun SetupNavGraph(
             val screen: Screen.DogBreedDetailsScreen = backStackEntry.toRoute()
             val dogBreedId = screen.breedId
             val viewModel = koinViewModel<DogBreedGalleryViewModel>(parameters = { parametersOf(dogBreedId) })
-            val dogBreedGallery = viewModel.dogBreedGalleryViewState().collectAsState(initial = PresentableDogBreedGallery.INITIAL).value
+            val dogBreedGalleryViewState = viewModel.dogBreedGalleryViewState().collectAsState(initial = DogBreedGalleryViewState.Loading).value
 
             DogBreedDetailsScreen(
-                dogBreedGallery = dogBreedGallery,
+                dogBreedGalleryViewState = dogBreedGalleryViewState,
                 callbacks = remember {
                     DogBreedsDetailsScreenCallbacks(
                         onBackClick = { navController.popBackStack() },

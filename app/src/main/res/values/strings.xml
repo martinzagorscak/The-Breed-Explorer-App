@@ -2,4 +2,10 @@
     <string name="app_name">The Breed Explorer App</string>
     <string name="dog_breeds_title">Dog Breeds</string>
     <string name="dog_breed_gallery_title_template">%s gallery</string>
-    <string name="dog_breed_empty_gallery_message">"We don't own any images of %s breed.\nIf you own one, share with us on: dog.images@dogs.com"</string></resources>
+    <string name="dog_breed_empty_gallery_message">"We don't own any images of %s breed.\nIf you own one, share with us on: dog.images@dogs.com"</string>
+    <string name="dog_breed_not_found_message">Ruff situation!\nDog is not on the leash.</string>
+    <string name="dog_breeds_empty_message">Try another dog breed keyword</string>
+    <string name="general_error_message">Error occurred</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="try_again">Try again</string>
+</resources>

@@ -1,6 +1,5 @@
 package com.example.thebreedexplorerapp.ui.screens
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,27 +26,42 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.thebreedexplorerapp.R
+import com.example.thebreedexplorerapp.ui.components.CTA
+import com.example.thebreedexplorerapp.ui.components.FallbackState
 import com.example.thebreedexplorerapp.ui.components.IconButton
+import com.example.thebreedexplorerapp.ui.components.LoadingIndicator
 import com.example.thebreedexplorerapp.ui.components.TopBar
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreedGallery
 import com.example.thebreedexplorerapp.ui.theme.Red40
 import com.example.thebreedexplorerapp.ui.theme.Red80
 import com.example.thebreedexplorerapp.ui.theme.Typography
+import com.example.thebreedexplorerapp.ui.viewmodel.DogBreedGalleryViewState
+import com.example.thebreedexplorerapp.ui.viewmodel.EMPTY
 
 private val galleryGridCellsMinWidth = 200.dp
 private val topBarIconSize = 36.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DogBreedDetailsScreen(
-    dogBreedGallery: PresentableDogBreedGallery,
+    dogBreedGalleryViewState: DogBreedGalleryViewState,
     callbacks: DogBreedsDetailsScreenCallbacks,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
+            val title = when (dogBreedGalleryViewState) {
+                is DogBreedGalleryViewState.Loaded -> stringResource(
+                    R.string.dog_breed_gallery_title_template,
+                    dogBreedGalleryViewState.gallery.breed.name
+                )
+
+                DogBreedGalleryViewState.Error, DogBreedGalleryViewState.Loading -> EMPTY
+            }
+
             TopBar(
-                title = stringResource(R.string.dog_breed_gallery_title_template, dogBreedGallery.breed.name),
+                title = title,
                 leadingContent = {
                     IconButton(
                         iconResId = R.drawable.ic_back,
@@ -55,27 +70,53 @@ fun DogBreedDetailsScreen(
                     )
                 },
                 trailingContent = {
-                    IconButton(
-                        iconResId = R.drawable.ic_favorite_filled.takeIf { dogBreedGallery.breed.isFavorite } ?: R.drawable.ic_favorite,
-                        onClick = { callbacks.onToggleDogBreedAsFavorite() },
-                        iconButtonSize = topBarIconSize,
-                        tint = if (isSystemInDarkTheme()) Red80 else Red40,
-                    )
+                    if (dogBreedGalleryViewState is DogBreedGalleryViewState.Loaded) {
+                        val iconResId =
+                            R.drawable.ic_favorite_filled.takeIf { dogBreedGalleryViewState.gallery.breed.isFavorite } ?: R.drawable.ic_favorite
+
+                        IconButton(
+                            iconResId = iconResId,
+                            onClick = { callbacks.onToggleDogBreedAsFavorite() },
+                            iconButtonSize = topBarIconSize,
+                            tint = if (isSystemInDarkTheme()) Red80 else Red40,
+                        )
+                    }
                 },
             )
         },
         modifier = modifier.fillMaxSize(),
     ) { paddingValues ->
-        Crossfade(targetState = dogBreedGallery.imageUrls) { imageUrls ->
-            if (imageUrls.isNotEmpty()) {
-                Gallery(
-                    imageUrls = dogBreedGallery.imageUrls,
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize(),
-                )
-            } else {
-                EmptyGallery(dogBreedName = dogBreedGallery.breed.name)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+        ) {
+            when (dogBreedGalleryViewState) {
+                is DogBreedGalleryViewState.Loaded -> {
+                    if (dogBreedGalleryViewState.gallery.imageUrls.isNotEmpty()) {
+                        Gallery(
+                            imageUrls = dogBreedGalleryViewState.gallery.imageUrls,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        EmptyGallery(dogBreedName = dogBreedGalleryViewState.gallery.breed.name)
+                    }
+                }
+
+                DogBreedGalleryViewState.Error -> {
+                    FallbackState(
+                        title = stringResource(R.string.dog_breed_not_found_message),
+                        cta = CTA(
+                            label = stringResource(R.string.navigate_back),
+                            onClick = callbacks.onBackClick,
+                        )
+                    )
+                }
+
+                DogBreedGalleryViewState.Loading -> {
+                    LoadingIndicator()
+                }
             }
         }
     }
@@ -127,9 +168,11 @@ private fun EmptyGallery(
 @Composable
 private fun DogBreedDetailsScreenPreview() {
     DogBreedDetailsScreen(
-        dogBreedGallery = PresentableDogBreedGallery(
-            breed = PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
-            imageUrls = emptyList(),
+        dogBreedGalleryViewState = DogBreedGalleryViewState.Loaded(
+            gallery = PresentableDogBreedGallery(
+                breed = PresentableDogBreed(id = 1, name = "Sausage Dog", isFavorite = false),
+                imageUrls = emptyList(),
+            )
         ),
         callbacks = DogBreedsDetailsScreenCallbacks(
             onBackClick = {},

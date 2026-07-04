@@ -1,5 +1,6 @@
 package com.example.thebreedexplorerapp.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thebreedexplorerapp.domain.usecase.GetAllDogBreedsUseCase
@@ -10,41 +11,66 @@ import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
-private const val EMPTY = ""
-private const val SEARCH_QUERY_DEBOUNCE = 300L
+const val EMPTY = ""
+private const val SEARCH_QUERY_DEBOUNCE = 300
+
+sealed class DogBreedsViewState {
+    data object Loading : DogBreedsViewState()
+    data class Loaded(val dogBreeds: List<PresentableDogBreed>) : DogBreedsViewState()
+    data object Empty : DogBreedsViewState()
+    data object Error : DogBreedsViewState()
+}
 
 abstract class DogBreedsViewModel : ViewModel() {
     abstract fun searchQueryViewState(): Flow<String>
-    abstract fun allDogBreedsViewState(): Flow<List<PresentableDogBreed>>
+    abstract fun dogBreedsViewState(): Flow<DogBreedsViewState>
     abstract fun onSearchQueryChanged(query: String)
     abstract fun clearSearchQuery()
     abstract fun toggleDogBreedAsFavorite(breedId: Int)
 }
 
 internal class DogBreedsViewModelImpl(
-    private val getAllDogBreedsUseCase: GetAllDogBreedsUseCase,
-    private val getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
+    getAllDogBreedsUseCase: GetAllDogBreedsUseCase,
+    getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
 ) : DogBreedsViewModel() {
 
     private val searchQuery = MutableStateFlow(EMPTY)
+    private val dogBreedsViewState = combine(
+        getAllDogBreedsUseCase(),
+        getFavoriteDogBreedIdsUseCase(),
+        searchQuery.debounce(SEARCH_QUERY_DEBOUNCE.milliseconds),
+    ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
+        Log.e("xxx", "${allDogBreeds.size}, $searchQuery")
+        val filteredDogBreeds = allDogBreeds
+            .filter { it.name.startsWith(prefix = searchQuery, ignoreCase = true) }
+            .map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
+
+        if (filteredDogBreeds.isNotEmpty()) {
+            DogBreedsViewState.Loaded(filteredDogBreeds)
+        } else {
+            DogBreedsViewState.Empty
+        }
+    }
+        .catch { emit(DogBreedsViewState.Error) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = DogBreedsViewState.Loading,
+        )
 
     override fun searchQueryViewState(): Flow<String> = searchQuery
 
-    override fun allDogBreedsViewState(): Flow<List<PresentableDogBreed>> = combine(
-        getAllDogBreedsUseCase(),
-        getFavoriteDogBreedIdsUseCase(),
-        searchQuery.debounce(SEARCH_QUERY_DEBOUNCE),
-    ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
-        allDogBreeds
-            .filter { it.name.startsWith(prefix = searchQuery, ignoreCase = true) }
-            .map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
-    }
+    override fun dogBreedsViewState(): Flow<DogBreedsViewState> = dogBreedsViewState
 
     override fun onSearchQueryChanged(query: String) = searchQuery.update { query }
 

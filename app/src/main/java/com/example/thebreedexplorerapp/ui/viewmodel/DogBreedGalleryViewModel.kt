@@ -11,38 +11,56 @@ import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-abstract class DogBreedGalleryViewModel : ViewModel() {
+sealed class DogBreedGalleryViewState {
+    data object Loading : DogBreedGalleryViewState()
+    data class Loaded(val gallery: PresentableDogBreedGallery) : DogBreedGalleryViewState()
+    data object Error : DogBreedGalleryViewState()
+}
 
-    abstract fun dogBreedGalleryViewState(): Flow<PresentableDogBreedGallery>
+abstract class DogBreedGalleryViewModel : ViewModel() {
+    abstract fun dogBreedGalleryViewState(): Flow<DogBreedGalleryViewState>
     abstract fun toggleDogBreedAsFavorite()
 }
 
 internal class DogBreedGalleryViewModelImpl(
     private val dogBreedId: Int,
-    private val getDogBreedDataUseCase: GetDogBreedDataUseCase,
+    getDogBreedDataUseCase: GetDogBreedDataUseCase,
     private val getDogBreedImagesUseCase: GetDogBreedImagesUseCase,
-    private val getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
+    getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
 ) : DogBreedGalleryViewModel() {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun dogBreedGalleryViewState(): Flow<PresentableDogBreedGallery> =
-        combine(
-            getDogBreedDataUseCase(breedId = dogBreedId),
-            getFavoriteDogBreedIdsUseCase()
-        ) { dogBreed, favoriteDogBreedIds ->
-            val images = getDogBreedImagesUseCase(breedId = dogBreedId)
+    private val dogBreedGalleryViewState = combine(
+        getDogBreedDataUseCase(breedId = dogBreedId),
+        getFavoriteDogBreedIdsUseCase()
+    ) { dogBreed, favoriteDogBreedIds ->
+        val images = getDogBreedImagesUseCase(breedId = dogBreedId)
 
-            dogBreed?.let {
-                PresentableDogBreedGallery(
-                    breed = dogBreed.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(dogBreedId)), // TODO replace with real value
+        dogBreed?.let {
+            DogBreedGalleryViewState.Loaded(
+                gallery = PresentableDogBreedGallery(
+                    breed = dogBreed.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(dogBreedId)),
                     imageUrls = images,
                 )
-            } ?: PresentableDogBreedGallery.INITIAL
-        }
+            )
+        } ?: DogBreedGalleryViewState.Error
+
+    }
+        .catch { emit(DogBreedGalleryViewState.Error) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = DogBreedGalleryViewState.Loading,
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun dogBreedGalleryViewState(): Flow<DogBreedGalleryViewState> = dogBreedGalleryViewState
 
     override fun toggleDogBreedAsFavorite() {
         viewModelScope.launch(Dispatchers.IO) {
