@@ -19,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.thebreedexplorerapp.R
-import com.example.thebreedexplorerapp.ui.theme.padding100
 import com.example.thebreedexplorerapp.ui.theme.padding200
 
 private val defaultIconButtonSize = 24.dp
@@ -43,7 +42,7 @@ fun IconButton(
             tint = tint,
             modifier = Modifier
                 .size(iconButtonSize)
-                .padding(padding100),
+                .padding(padding200),
         )
     }
 }

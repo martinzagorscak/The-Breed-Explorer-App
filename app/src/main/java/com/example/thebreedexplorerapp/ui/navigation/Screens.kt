@@ -1,5 +1,9 @@
 package com.example.thebreedexplorerapp.ui.navigation
 
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -36,6 +40,10 @@ fun SetupNavGraph(
     NavHost(
         navController = navController,
         startDestination = Screen.DogBreedsScreen,
+        enterTransition = { expandHorizontally() },
+        exitTransition = { fadeOut() },
+        popEnterTransition = { fadeIn() },
+        popExitTransition = { shrinkHorizontally() }
     ) {
         composable<Screen.DogBreedsScreen> {
             val viewModel = koinViewModel<DogBreedsViewModel>()
