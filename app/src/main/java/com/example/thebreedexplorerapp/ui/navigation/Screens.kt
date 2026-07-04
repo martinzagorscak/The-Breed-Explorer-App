@@ -53,7 +53,7 @@ fun SetupNavGraph(
                             navController.navigate(route = Screen.DogBreedDetailsScreen(dogBreedId))
                         },
                         onAddDogBreedToFavoriteClick = viewModel::toggleDogBreedAsFavorite,
-                        onTryAgainClick = {}, // todo continue here
+                        onTryAgainClick = viewModel::refetchAllDogBreeds,
                     )
                 }
             )

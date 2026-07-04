@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thebreedexplorerapp.domain.usecase.GetAllDogBreedsUseCase
 import com.example.thebreedexplorerapp.domain.usecase.GetFavoriteDogBreedIdsUseCase
+import com.example.thebreedexplorerapp.domain.usecase.RefreshAllDogBreedsUseCase
 import com.example.thebreedexplorerapp.domain.usecase.ToggleDogBreedAsFavoriteUseCase
 import com.example.thebreedexplorerapp.ui.model.PresentableDogBreed
 import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
@@ -36,12 +37,14 @@ abstract class DogBreedsViewModel : ViewModel() {
     abstract fun onSearchQueryChanged(query: String)
     abstract fun clearSearchQuery()
     abstract fun toggleDogBreedAsFavorite(breedId: Int)
+    abstract fun refetchAllDogBreeds()
 }
 
 internal class DogBreedsViewModelImpl(
     getAllDogBreedsUseCase: GetAllDogBreedsUseCase,
     getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
+    private val refreshAllDogBreedsUseCase: RefreshAllDogBreedsUseCase,
 ) : DogBreedsViewModel() {
 
     private val searchQuery = MutableStateFlow(EMPTY)
@@ -50,18 +53,22 @@ internal class DogBreedsViewModelImpl(
         getFavoriteDogBreedIdsUseCase(),
         searchQuery.debounce(SEARCH_QUERY_DEBOUNCE.milliseconds),
     ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
-        Log.e("xxx", "${allDogBreeds.size}, $searchQuery")
         val filteredDogBreeds = allDogBreeds
             .filter { it.name.startsWith(prefix = searchQuery, ignoreCase = true) }
             .map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
 
         if (filteredDogBreeds.isNotEmpty()) {
             DogBreedsViewState.Loaded(filteredDogBreeds)
-        } else {
+        } else if(searchQuery.isNotBlank() && filteredDogBreeds.isEmpty()) {
             DogBreedsViewState.Empty
+        } else {
+            DogBreedsViewState.Loading
         }
     }
-        .catch { emit(DogBreedsViewState.Error) }
+        .catch {
+            Log.e("DogBreedsVM", it.message ?: "Error occurred in the view state")
+            emit(DogBreedsViewState.Error)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -79,6 +86,12 @@ internal class DogBreedsViewModelImpl(
     override fun toggleDogBreedAsFavorite(breedId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             toggleDogBreedAsFavoriteUseCase(breedId)
+        }
+    }
+
+    override fun refetchAllDogBreeds() {
+        viewModelScope.launch(Dispatchers.Default) {
+            refreshAllDogBreedsUseCase()
         }
     }
 }

@@ -8,6 +8,8 @@ import com.example.thebreedexplorerapp.domain.usecase.GetDogBreedImagesUseCase
 import com.example.thebreedexplorerapp.domain.usecase.GetDogBreedImagesUseCaseImpl
 import com.example.thebreedexplorerapp.domain.usecase.GetFavoriteDogBreedIdsUseCase
 import com.example.thebreedexplorerapp.domain.usecase.GetFavoriteDogBreedIdsUseCaseImpl
+import com.example.thebreedexplorerapp.domain.usecase.RefreshAllDogBreedsUseCase
+import com.example.thebreedexplorerapp.domain.usecase.RefreshAllDogBreedsUseCaseImpl
 import com.example.thebreedexplorerapp.domain.usecase.ToggleDogBreedAsFavoriteUseCase
 import com.example.thebreedexplorerapp.domain.usecase.ToggleDogBreedAsFavoriteUseCaseImpl
 import org.koin.dsl.module
@@ -18,4 +20,5 @@ val domainModule = module {
     single<GetDogBreedImagesUseCase> { GetDogBreedImagesUseCaseImpl(dogRepository = get()) }
     single<GetFavoriteDogBreedIdsUseCase> { GetFavoriteDogBreedIdsUseCaseImpl(dogRepository = get()) }
     single<ToggleDogBreedAsFavoriteUseCase> { ToggleDogBreedAsFavoriteUseCaseImpl(dogRepository = get()) }
+    single<RefreshAllDogBreedsUseCase> { RefreshAllDogBreedsUseCaseImpl(dogRepository = get()) }
 }

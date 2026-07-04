@@ -57,12 +57,15 @@ fun DogBreedsScreen(
         modifier = modifier.fillMaxSize(),
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            SearchBar(
-                query = dogBreedQuery,
-                onQueryChange = callbacks.onQueryChange,
-                onClearClick = callbacks.onQueryClear,
-                modifier = Modifier.padding(padding200),
-            )
+            if (dogBreedsViewState != DogBreedsViewState.Error) {
+                SearchBar(
+                    query = dogBreedQuery,
+                    onQueryChange = callbacks.onQueryChange,
+                    onClearClick = callbacks.onQueryClear,
+                    modifier = Modifier.padding(padding200),
+                )
+            }
+
             when (dogBreedsViewState) {
                 is DogBreedsViewState.Loaded -> {
                     DogBreedList(
@@ -92,7 +95,6 @@ fun DogBreedsScreen(
                 }
 
                 DogBreedsViewState.Loading -> {
-
                     AlignInTheMiddle {
                         LoadingIndicator()
                     }

@@ -31,7 +31,6 @@ val dataModule = module {
             override fun handleException(context: CoroutineContext, exception: Throwable) {
                 Log.e("APP_BACKGROUND_SCOPE", "Exception, $exception was thrown inside context: $context")
             }
-
         }
     }
 
