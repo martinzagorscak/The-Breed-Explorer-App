@@ -41,30 +41,14 @@ abstract class DogBreedsViewModel : ViewModel() {
 }
 
 internal class DogBreedsViewModelImpl(
-    getAllDogBreedsUseCase: GetAllDogBreedsUseCase,
-    getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
+    private val getAllDogBreedsUseCase: GetAllDogBreedsUseCase,
+    private val getFavoriteDogBreedIdsUseCase: GetFavoriteDogBreedIdsUseCase,
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
     private val refreshAllDogBreedsUseCase: RefreshAllDogBreedsUseCase,
 ) : DogBreedsViewModel() {
 
     private val searchQuery = MutableStateFlow(EMPTY)
-    private val dogBreedsViewState = combine(
-        getAllDogBreedsUseCase(),
-        getFavoriteDogBreedIdsUseCase(),
-        searchQuery.debounce(SEARCH_QUERY_DEBOUNCE.milliseconds),
-    ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
-        val filteredDogBreeds = allDogBreeds
-            .filter { it.name.startsWith(prefix = searchQuery, ignoreCase = true) }
-            .map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
-
-        if (filteredDogBreeds.isNotEmpty()) {
-            DogBreedsViewState.Loaded(filteredDogBreeds)
-        } else if(searchQuery.isNotBlank() && filteredDogBreeds.isEmpty()) {
-            DogBreedsViewState.Empty
-        } else {
-            DogBreedsViewState.Loading
-        }
-    }
+    private val dogBreedsViewState = formDogBreedsViewState()
         .catch {
             Log.e("DogBreedsVM", it.message ?: "Error occurred in the view state")
             emit(DogBreedsViewState.Error)
@@ -92,6 +76,34 @@ internal class DogBreedsViewModelImpl(
     override fun refetchAllDogBreeds() {
         viewModelScope.launch(Dispatchers.Default) {
             refreshAllDogBreedsUseCase()
+        }
+    }
+
+    private fun formDogBreedsViewState() = combine(
+        getAllDogBreedsUseCase(),
+        getFavoriteDogBreedIdsUseCase(),
+        searchQuery.debounce(SEARCH_QUERY_DEBOUNCE.milliseconds),
+    ) { allDogBreeds, favoriteDogBreedIds, searchQuery ->
+        val filteredDogBreeds = allDogBreeds
+            ?.filter { it.name.startsWith(prefix = searchQuery, ignoreCase = true) }
+            ?.map { it.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(it.id)) }
+
+        when {
+            filteredDogBreeds == null -> {
+                DogBreedsViewState.Error
+            }
+
+            filteredDogBreeds.isNotEmpty() -> {
+                DogBreedsViewState.Loaded(filteredDogBreeds)
+            }
+
+            searchQuery.isNotBlank() && filteredDogBreeds.isEmpty() -> {
+                DogBreedsViewState.Empty
+            }
+
+            else -> {
+                DogBreedsViewState.Loading
+            }
         }
     }
 }

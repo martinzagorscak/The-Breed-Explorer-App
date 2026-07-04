@@ -15,8 +15,8 @@ import kotlinx.serialization.json.Json
 import org.koin.core.scope.Scope
 
 private const val REQUEST_TIMEOUT = 5000L
-private const val MAX_NUMBER_OF_CALLS = Int.MAX_VALUE
-private const val MAX_CALL_DELAY = 20000L
+private const val MAX_NUMBER_OF_CALLS = 2
+private const val MAX_CALL_DELAY = 5000L
 
 internal fun Scope.defaultHttpClient(json: Json): HttpClient {
 

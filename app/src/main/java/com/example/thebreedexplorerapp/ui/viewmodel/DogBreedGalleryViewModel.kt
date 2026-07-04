@@ -1,5 +1,6 @@
 package com.example.thebreedexplorerapp.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.thebreedexplorerapp.domain.usecase.GetDogBreedDataUseCase
@@ -42,17 +43,21 @@ internal class DogBreedGalleryViewModelImpl(
     ) { dogBreed, favoriteDogBreedIds ->
         val images = getDogBreedImagesUseCase(breedId = dogBreedId)
 
-        dogBreed?.let {
+        if (dogBreed != null && images != null) {
             DogBreedGalleryViewState.Loaded(
                 gallery = PresentableDogBreedGallery(
                     breed = dogBreed.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(dogBreedId)),
                     imageUrls = images,
                 )
             )
-        } ?: DogBreedGalleryViewState.Error
-
+        } else {
+            DogBreedGalleryViewState.Error
+        }
     }
-        .catch { emit(DogBreedGalleryViewState.Error) }
+        .catch {
+            Log.e("DogBreedsGalleryVM", it.message ?: "Error occurred in the view state")
+            emit(DogBreedGalleryViewState.Error)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
