@@ -16,12 +16,12 @@ interface DogApi {
 internal class DogApiImpl(private val client: HttpClient) : DogApi {
 
     override suspend fun getAllBreeds(): Result<ApiDogBreedsResponse> {
-        return mockedAllDogBreedsApiCall()
+//        return mockedAllDogBreedsApiCall()
         return handleGetResult<ApiDogBreedsResponse>("https://dog.ceo/api/breeds/list/all")
     }
 
     override suspend fun getBreedImages(breedKeyword: String): Result<ApiDogBreedGalleryResponse> {
-        return mockedBreedImagesApiCall()
+//        return mockedBreedImagesApiCall()
         return handleGetResult<ApiDogBreedGalleryResponse>("https://dog.ceo/api/breed/$breedKeyword/images/random/20")
     }
 
