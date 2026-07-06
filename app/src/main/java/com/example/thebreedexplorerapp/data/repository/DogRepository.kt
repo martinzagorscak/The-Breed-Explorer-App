@@ -69,5 +69,8 @@ internal class DogRepositoryImpl(
         }
     }
 
-    override suspend fun refreshAllDogBreeds() = refreshPublisher.emit(Unit)
+    override suspend fun refreshAllDogBreeds() {
+        refreshPublisher.emit(Unit)
+        allDogBreedsPublisher.emit(emptyList())
+    }
 }

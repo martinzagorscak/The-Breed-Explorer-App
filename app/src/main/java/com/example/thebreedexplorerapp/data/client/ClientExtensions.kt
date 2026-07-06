@@ -24,7 +24,8 @@ internal fun Scope.defaultHttpClient(json: Json): HttpClient {
 
         expectSuccess = true
 
-        installRetryPolicy()
+        // disabled for easier testing
+//        installRetryPolicy()
 
         installContentNegotiation(json)
 
