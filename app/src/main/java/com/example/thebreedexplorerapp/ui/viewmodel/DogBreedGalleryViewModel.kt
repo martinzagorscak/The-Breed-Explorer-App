@@ -12,9 +12,11 @@ import com.example.thebreedexplorerapp.ui.model.toPresentableDogBreed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -37,17 +39,25 @@ internal class DogBreedGalleryViewModelImpl(
     private val toggleDogBreedAsFavoriteUseCase: ToggleDogBreedAsFavoriteUseCase,
 ) : DogBreedGalleryViewModel() {
 
+    val dogBreedImages = MutableStateFlow<List<String>?>(null)
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val images = getDogBreedImagesUseCase(breedId = dogBreedId)
+            images?.let { dogBreedImages.emit(it) }
+        }
+    }
+
     private val dogBreedGalleryViewState = combine(
         getDogBreedDataUseCase(breedId = dogBreedId),
+        dogBreedImages.filterNotNull(),
         getFavoriteDogBreedIdsUseCase()
-    ) { dogBreed, favoriteDogBreedIds ->
-        val images = getDogBreedImagesUseCase(breedId = dogBreedId)
-
-        if (dogBreed != null && images != null) {
+    ) { dogBreed, dogBreedImages, favoriteDogBreedIds ->
+        if (dogBreed != null) {
             DogBreedGalleryViewState.Loaded(
                 gallery = PresentableDogBreedGallery(
                     breed = dogBreed.toPresentableDogBreed(isFavorite = favoriteDogBreedIds.contains(dogBreedId)),
-                    imageUrls = images,
+                    imageUrls = dogBreedImages,
                 )
             )
         } else {

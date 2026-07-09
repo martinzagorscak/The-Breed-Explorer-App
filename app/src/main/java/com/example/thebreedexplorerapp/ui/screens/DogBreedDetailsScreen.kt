@@ -140,7 +140,7 @@ private fun Gallery(
                 contentDescription = null,
                 placeholder = painterResource(R.drawable.dog_placeholder),
                 fallback = painterResource(R.drawable.dog_fallback),
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()

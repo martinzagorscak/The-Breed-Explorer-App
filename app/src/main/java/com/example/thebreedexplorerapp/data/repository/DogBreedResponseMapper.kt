@@ -24,7 +24,7 @@ fun ApiDogBreedsResponse.toDogBreeds(): List<DogBreed> {
                 val dogSubBreed = DogBreed(
                     id = id,
                     name = "${mainBreed.capitalize()} ${subBreed.capitalize()}",
-                    keyword = "${mainBreed.lowercase()}-${subBreed.lowercase()}",
+                    keyword = "${mainBreed.lowercase()}/${subBreed.lowercase()}",
                 )
                 breedList.add(dogSubBreed)
                 id++
