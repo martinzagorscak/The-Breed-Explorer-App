@@ -34,3 +34,5 @@ app [here](https://app.bitrise.io/app/ef9910a8-5dcf-403c-84c8-ed6ac02c2380/insta
 The app from Bitrise does not include latest changes, but it provides the expected functionality except the remote data from non-working API because I ran out of free credits.
 Full commit list could be seen [here](https://github.com/martinzagorscak/The-Breed-Explorer-App/commits/main/).
 To test the app as a whole - clone the project and build the apk on your machine.
+
+**Specs can be found [here](specs.pdf).**
